@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Initialize variables
+URL=""
+TYPE=""
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -u|--url)
+      URL="$2"
+      shift # Shift past the argument
+      shift # Shift past the value
+      ;;
+    -t|--type)
+      TYPE="$2"
+      shift # Shift past the argument
+      shift # Shift past the value
+      ;;
+    -*|--*)
+      echo "Unknown option $1"
+      exit 1
+      ;;
+    *)
+      echo "Unknown positional argument $1"
+      exit 1
+      ;;
+  esac
+done
+
+# Validate required arguments
+if [[ -z "$URL" || -z "$TYPE" ]]; then
+  echo "Usage: bash $0 -u <url> -t <type>"
+  exit 1
+fi
+
+# Execute the command
+if [[ "$TYPE" == "dns" ]]; then
+  subfinder -silent -d "$URL" | dnsx -silent
+elif [[ "$TYPE" == "a-record" ]]; then
+  subfinder -silent -d "$URL" | dnsx -silent -a -resp
+elif [[ "$TYPE" == "dns-resp-only" ]]; then
+  subfinder -silent -d "$URL" | dnsx -silent -a -resp-only
+else
+  echo "Unsupported type: $TYPE"
+  exit 1
+fi
